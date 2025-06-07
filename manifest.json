@@ -1,11 +1,11 @@
 {
-	"id": "daily-notes",
-	"name": "Daily Notes",
-	"version": "1.0.0",
+	"id": "my-daily-notes",
+	"name": "my-daily-notes",
+	"version": "0.0.1",
 	"minAppVersion": "0.15.0",
-	"description": "This is a daily notes plugin for Obsidian.",
-	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md",
+	"description": "一个用于管理日记、周记、项目和会议记录的工作流插件",
+	"author": "jjxu",
+	"authorUrl": "https://github.com/dorlolo",
 	"fundingUrl": "https://obsidian.md/pricing",
 	"isDesktopOnly": false
 }

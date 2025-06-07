@@ -1,0 +1,117 @@
+import { Plugin } from 'obsidian';
+
+export interface WorkflowPluginSettings {
+    dailyFolder: string;
+    weeklyFolder: string;
+    projectFolder: string;
+    meetingFolder: string;
+    autoCreate: boolean;
+    autoCreateTime: string;
+    dateFormat: string;
+    language: string;
+    dailyTemplate: string;
+    weeklyTemplate: string;
+    projectTemplate: string;
+    meetingTemplate: string;
+}
+
+export const DEFAULT_SETTINGS: WorkflowPluginSettings = {
+    dailyFolder: 'workFlow/daily',
+    weeklyFolder: 'workFlow/weekly',
+    projectFolder: 'workFlow/projects',
+    meetingFolder: 'workFlow/meetings',
+    autoCreate: true,
+    autoCreateTime: '00:00',
+    dateFormat: 'YYYY-MM-DD',
+    language: 'zh',
+    dailyTemplate: `---
+aliases: 
+tags:
+  - daily
+date: "{{date}}"
+week: "W{{week}}"
+weekDay: "{{weekday}}"
+---
+#{{date_year}}-W{{week}}
+
+---
+
+# 每周工作
+![[workFlow/weekly/{{date_year}}-w{{week}}#主要任务]]
+
+# 当日工作代办 
+{{incomplete_work}}
+
+# 当日个人代办
+{{incomplete_personal}} `,
+    weeklyTemplate: `---
+aliases:
+  - 周记
+tags:
+  - weekly
+---
+
+month: #{{date_year}}-{{date_month}}
+week: #W{{week}}
+
+---
+# 主要任务
+- [ ] `,
+    projectTemplate: `---
+tags:
+  - project
+date: "{{date}}"
+status: active
+---
+
+# {{project_name}}
+
+## 项目目标
+- 
+
+## 主要任务
+- [ ] 
+
+## 相关文件
+- ![[workFlow/daily/相关日记文件]]
+
+## 会议记录
+- ![[workFlow/meetings/相关会议记录]]`,
+    meetingTemplate: `---
+tags:
+  - meeting
+date: "{{date}}"
+time: "{{time}}"
+attendees: 
+  - 
+project: ![[workFlow/projects/相关项目]]
+---
+
+# {{meeting_name}}
+
+## 会议目标
+- 
+
+## 会议议程
+1. 
+2. 
+
+## 会议决议
+- [ ] `
+};
+
+export class SettingsManager {
+    constructor(private plugin: Plugin) {}
+
+    async loadSettings(): Promise<WorkflowPluginSettings> {
+        return Object.assign({}, DEFAULT_SETTINGS, await this.plugin.loadData());
+    }
+
+    async saveSettings(settings: WorkflowPluginSettings): Promise<void> {
+        await this.plugin.saveData(settings);
+    }
+    async resetToDefaults(): Promise<void> {
+      const defaultSettings = { ...DEFAULT_SETTINGS };
+      await this.plugin.saveData(defaultSettings);
+    }
+}
