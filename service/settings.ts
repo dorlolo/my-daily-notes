@@ -23,7 +23,6 @@ export const DEFAULT_SETTINGS: WorkflowPluginSettings = {
     dateFormat: 'YYYY-MM-DD',
     language: 'zh',
     dailyTemplate: `---
-aliases: 
 tags:
   - daily
 date: "{{date}}"
@@ -43,8 +42,6 @@ weekDay: "{{weekday}}"
 # 当日个人代办
 {{incomplete_personal}} `,
     weeklyTemplate: `---
-aliases:
-  - 周记
 tags:
   - weekly
 ---
@@ -56,13 +53,13 @@ week: #W{{week}}
 # 主要任务
 `,
     projectTemplate: `---
+aliases: 
+  - {{project_name}}
 tags:
   - project
 date: "{{date}}"
 status: active
 ---
-
-# {{project_name}}
 
 ## 项目资料
 
@@ -87,14 +84,15 @@ links: {{relatedFile}}
 # {{meeting_name}}
 
 ## 会议目标
-- 
 
-## 会议议程
+
+## 会议内容
 1. 
 2. 
 
 ## 会议决议
-- [ ] `
+
+`
 };
 
 import WorkflowPlugin from '../main'; // 引入你的插件主类

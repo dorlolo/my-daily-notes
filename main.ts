@@ -167,9 +167,6 @@ export default class WorkflowPlugin extends Plugin {
         }
         this.editorMenuListener=(menu: Menu, editor: Editor, view: MarkdownView) => {
             const file = view.file;
-            // console.log('filee',file);
-            // console.log('file.path.startsWith(this.settings.projectFolder)',file?.path.startsWith(this.settings.projectFolder));
-            // console.log('view instanceof MarkdownView',view instanceof MarkdownView);
             if (
               file && 
               file.path.startsWith(this.settings.projectFolder) &&
@@ -177,9 +174,7 @@ export default class WorkflowPlugin extends Plugin {
             ) {
                 const cursor = view.editor.getCursor();
                 const lineContent = view.editor.getLine(cursor.line);
-                console.log('lineContent',lineContent);
                 if (lineContent.trim().startsWith("#")) {
-                    console.log('22222222222');
                     menu.addItem((item) => {
                         item.setTitle('添加到每周任务')
                         .setIcon(AddLinkIcon)
@@ -193,7 +188,56 @@ export default class WorkflowPlugin extends Plugin {
         this.app.workspace.off('editor-menu', this.editorMenuListener);
         // 注册新的事件监听器
         this.app.workspace.on('file-menu', this.contextMenuListener);
-        this.app.workspace.on('editor-menu', this.editorMenuListener)
+        this.app.workspace.on('editor-menu', this.editorMenuListener);
+
+        this.registerDomEvent(document, 'click', (event) => {
+            // 查找最近的文件树项目元素
+            let target = event.target as HTMLElement;
+            while (target && !target.classList.contains('tree-item-self')) {
+                if (target.parentElement === null){
+                    return;
+                }
+                target = target.parentElement;
+            }
+            
+            // 如果没找到文件树项目，退出
+            if (!target) {
+                return;
+            }
+            
+            // 获取路径（确保存在）
+            const folderPath = target.dataset.path;
+            if (!folderPath) {
+                return;
+            }
+            const parentPath = folderPath.substring(0, folderPath.lastIndexOf('/'));
+            if (target.classList.contains('tree-item-self')&&parentPath===this.settings.projectFolder) {
+                const folderName = folderPath.substring(folderPath.lastIndexOf('/') + 1);
+                const indexFilePath = `${folderPath}/${folderName}-index.md`;
+                const indexFile = this.app.vault.getAbstractFileByPath(indexFilePath);
+                if (indexFile instanceof TFile) {
+                    this.app.workspace.getLeaf(false).openFile(indexFile, { active: false });
+                    event.preventDefault();
+                    event.stopPropagation();
+                    
+                    // 阻止默认行为（防止选中目录被取消）
+                    // console.log("!target.classList.contains('is-active')",!target.classList.contains('is-active'))
+                    // if (!target.classList.contains('is-active')){
+                    //     event.preventDefault();
+                    //     event.stopPropagation();
+                    //     setTimeout(() => {
+                    //         // 移除所有文件树项目的选中状态
+                    //         document.querySelectorAll('.is-active').forEach(el => {
+                    //             el.classList.remove('is-active');
+                    //         });
+                            
+                    //         // 恢复当前目录的选中状态
+                    //         target.classList.add('is-active');
+                    //     }, 10);
+                    // }
+                }
+            }
+        });
 
     }
     // 初始化设置面板
@@ -351,9 +395,7 @@ export default class WorkflowPlugin extends Plugin {
     // 创建项目笔记
     async createProjectNote(projectName?: string|null, relatedFile?: TFile) {
         if (!projectName) {
-            console.log('projectName input');
             projectName = await this.promptUser('请输入项目名称');
-            console.log('projectName ',projectName);
             if (!projectName) return;
         }
         
@@ -367,7 +409,7 @@ export default class WorkflowPlugin extends Plugin {
         const day = String(date.getDate()).padStart(2, '0');
         
         // 生成文件名和路径
-        const fileName = `${projectName}.md`;
+        const fileName = `${projectName}-index.md`;
         const filePath = `${this.settings.projectFolder}/${projectName}/${fileName}`;
         
         // 生成内容
