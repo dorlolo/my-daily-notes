@@ -14,4 +14,4 @@
 
 ## 注释事项
 - 使用前请先禁用官方的日记插件
-![alt text](image.png)
+![alt text](./docs/assets/disable_obsidian_daily_notes_cn.png)
