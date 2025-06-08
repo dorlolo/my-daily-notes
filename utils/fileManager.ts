@@ -43,8 +43,8 @@ export class FileManager {
             const content = await this.app.vault.read(file);
             const lines = content.split('\n');
             
-            let workTasks: string[] = [];
-            let personalTasks: string[] = [];
+            const workTasks: string[] = [];
+            const personalTasks: string[] = [];
             let currentSection = '';
         
             // 任务分类标题（可从设置中获取）

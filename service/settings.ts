@@ -1,4 +1,3 @@
-import { Plugin } from 'obsidian';
 export interface WorkflowPluginSettings {
     dailyFolder: string;
     weeklyFolder: string;
@@ -98,8 +97,10 @@ links: {{relatedFile}}
 - [ ] `
 };
 
+import WorkflowPlugin from '../main'; // 引入你的插件主类
+
 export class SettingsManager {
-    constructor(private plugin: Plugin) {}
+    constructor(private plugin: WorkflowPlugin) {} // 指定为你的自定义插件类型
 
     async loadSettings(): Promise<WorkflowPluginSettings> {
         return Object.assign({}, DEFAULT_SETTINGS, await this.plugin.loadData());
@@ -108,11 +109,12 @@ export class SettingsManager {
     async saveSettings(settings: WorkflowPluginSettings): Promise<void> {
         await this.plugin.saveData(settings);
     }
+    
     async resetToDefaults(): Promise<void> {
-      console.log('settings.resetToDefaults')
-      this.plugin.settings = {...DEFAULT_SETTINGS};
+      // console.log('settings.resetToDefaults');
+      this.plugin.settings = {...DEFAULT_SETTINGS}; // 现在 TypeScript 知道 settings 属性存在
       await this.plugin.saveData(this.plugin.settings);
-      console.log('settings.resetToDefaults done')
-      console.log('plugin.settings', this.plugin.settings)
+      console.log('settings.resetToDefaults done');
+      // console.log('plugin.settings', this.plugin.settings);
     }
 }

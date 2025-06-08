@@ -1,4 +1,4 @@
-import { Plugin, TFile,Menu,Notice } from 'obsidian';
+import { Plugin, TFile,Menu,MarkdownView } from 'obsidian';
 import { WorkflowPluginSettings, SettingsManager } from './service/settings';
 import { FileManager } from './utils/fileManager';
 import { DateUtils } from './utils/dateUtils';
@@ -210,8 +210,13 @@ export default class WorkflowPlugin extends Plugin {
 
     findLeafByPath(path: string): any {
         return this.app.workspace.getLeavesOfType('markdown').find(leaf => {
-            const file = leaf.view.file;
-            return file && file.path === path;
+            // 方法 1: 尝试通过 view.file 获取（旧版本 API）
+            if (leaf.view instanceof MarkdownView) {
+                const file = leaf.view.file;
+                if (file && file.path === path) {
+                    return true;
+                }
+            }
         }) || null;
     }
 

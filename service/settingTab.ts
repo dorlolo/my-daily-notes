@@ -7,7 +7,7 @@ export class WorkflowSettingTab extends PluginSettingTab {
     private settings: WorkflowPluginSettings;
     private saveSettings: (settings: WorkflowPluginSettings) => Promise<void>;
     private resetDefaultSettings: () => Promise<void>;
-
+    private plugin: WorkflowPlugin;
     constructor(
         app: App, 
         plugin: WorkflowPlugin, // 接收插件实例
@@ -15,6 +15,7 @@ export class WorkflowSettingTab extends PluginSettingTab {
         resetDefaultSettings: () => Promise<void>
     ) {
         super(app, plugin); // 传递插件实例给父类
+        this.plugin = plugin; // 初始化插件属性
         this.settings = plugin.settings; // 从插件实例获取 settings
         this.saveSettings = saveSettings;
         this.resetDefaultSettings = resetDefaultSettings;
