@@ -1,11 +1,11 @@
 {
 	"id": "my-daily-notes",
 	"name": "my-daily-notes",
-	"version": "0.0.1",
+	"version": "1.0.2",
 	"minAppVersion": "0.15.0",
-	"description": "一个用于管理日记、周记、项目和会议记录的工作流插件",
-	"author": "jjxu",
+	"description": "一个用于生成日记、周记、项目和会议笔记的插件",
+	"author": "dorlolo <wavingbear@163.com>",
 	"authorUrl": "https://github.com/dorlolo",
-	"fundingUrl": "https://obsidian.md/pricing",
+	"fundingUrl": "https://github.com/dorlolo/my-daily-notes",
 	"isDesktopOnly": false
 }
