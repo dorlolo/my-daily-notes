@@ -1,7 +1,7 @@
 {
 	"id": "my-daily-notes",
 	"name": "my-daily-notes",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"minAppVersion": "0.15.0",
 	"description": "一个用于生成日记、周记、项目和会议笔记的插件",
 	"author": "dorlolo <wavingbear@163.com>",
