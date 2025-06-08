@@ -1,76 +1,50 @@
-import { Plugin, TFile } from 'obsidian';
+import { Plugin, TFile,Menu,Notice } from 'obsidian';
 import { WorkflowPluginSettings, SettingsManager } from './service/settings';
 import { FileManager } from './utils/fileManager';
 import { DateUtils } from './utils/dateUtils';
 import { PromptModal } from './utils/modal';
 import { WorkflowSettingTab } from './service/settingTab';
-
+const AddProjectIcon ="target";
+const AddMettingIcon ="microphone";
+const AddDailyIcon ="calendar";
 export default class WorkflowPlugin extends Plugin {
     settings: WorkflowPluginSettings;
     ribbonIconEl: HTMLElement;
     private settingsManager: SettingsManager;
     private fileManager: FileManager;
     private dateUtils: DateUtils;
-
+    private contextMenuListener: (menu: Menu, file: TFile) => void; // 保存事件监听器引用
     async onload() {
         console.log('loading workflow plugin');
-
         // 初始化管理类
         this.settingsManager = new SettingsManager(this);
         this.settings = await this.settingsManager.loadSettings();
         this.fileManager = new FileManager(this.app, this.settings);
         this.dateUtils = new DateUtils(this.settings);
 
-        console.log('addRibbonIcon:');
-        // 添加Ribbon按钮
-        this.addRibbonIcon('calendar', '打开今日日记', () => {
-            this.createOrOpenDailyNote();
-        });
-        this.addRibbonIcon('target', '创建项目', () => {
-            this.createProjectNote();
-        });
-
-        // 添加会议内容Ribbon按钮
-        this.addRibbonIcon('microphone', '创建会议记录', () => {
-            this.createMeetingNote();
-        });
         
-        // 添加命令
-        console.log('addCommands:');
-        this.addCommands();
-
-        // 添加设置面板
-        console.log('addSettingTab:');
-        this.addSettingTab(new WorkflowSettingTab(this.app, this, 
-            (settings) => this.settingsManager.saveSettings(settings),
-            () => (this.settingsManager.resetToDefaults())
-    ));
-      
-        console.log('registerEvent:');
-        // 注册文件右键菜单
-        this.registerEvent(
-            this.app.workspace.on('file-menu', (menu, file) => {
-                if (file instanceof TFile) {
-                    this.addContextMenuItems(menu, file);
-                }
-            })
-        );
+        this.initRabbotnIcon()
+        this.initCommands();
+        this.initSettingsTab();
+        this.initContextMenu();
 
         // 检查是否需要自动创建日记
-        console.log('checkAndCreateDailyNote:');
         if (this.settings.autoCreate) {
             this.checkAndCreateDailyNote();
         }
-        // this.disableDailyNotesPlugin();
         console.log('workflow plugin loaded');
     }
 
     onunload() {
+        if (this.contextMenuListener) {
+            console.log('onunload:remove contextMenuListener')
+            this.app.workspace.off('file-menu', this.contextMenuListener);
+        }
         console.log('unloading workflow plugin');
     }
-    // 添加命令
-    addCommands() {
-        // 创建当日日记
+    // 初始化命令
+    initCommands() {
+        // 创建当日日记 
         this.addCommand({
             id: 'create-daily-note',
             name: '创建/打开今日日记',
@@ -122,49 +96,82 @@ export default class WorkflowPlugin extends Plugin {
             }
         });
     }
-
-    // 添加右键菜单选项
-    addContextMenuItems(menu, file) {
-        // 在日记文件上右键创建相关项目
-        if (file.path.startsWith(this.settings.dailyFolder)) {
-            menu.addItem((item) => {
-                item.setTitle('创建相关项目')
-                    .setIcon('folder')
-                    .onClick(async () => {
-                        const projectName = await this.promptUser('请输入项目名称');
-                        if (projectName) {
-                            this.createProjectNote(projectName, file);
-                        }
-                    });
-            });
-
-            menu.addItem((item) => {
-                item.setTitle('创建相关会议记录')
-                    .setIcon('calendar')
-                    .onClick(async () => {
-                        const meetingName = await this.promptUser('请输入会议名称');
-                        if (meetingName) {
-                            this.createMeetingNote(meetingName, file);
-                        }
-                    });
-            });
-        }
-
-        // 在项目文件上右键创建相关会议
-        if (file.path.startsWith(this.settings.projectFolder)) {
-            menu.addItem((item) => {
-                item.setTitle('创建相关会议记录')
-                    .setIcon('calendar')
-                    .onClick(async () => {
-                        const meetingName = await this.promptUser('请输入会议名称');
-                        if (meetingName) {
-                            this.createMeetingNote(meetingName, file);
-                        }
-                    });
-            });
-        }
+    // 初始化Ribbon按钮
+    initRabbotnIcon(){
+        this.addRibbonIcon(AddDailyIcon, '打开今日日记', () => {
+            this.createOrOpenDailyNote();
+        });
+        this.addRibbonIcon(AddProjectIcon, '创建项目', () => {
+            this.createProjectNote();
+        });
+        // 添加会议内容Ribbon按钮
+        this.addRibbonIcon(AddMettingIcon, '创建会议记录', () => {
+            this.createMeetingNote();
+        });
     }
+    // 初始化右键菜单选项
+    initContextMenu() {
+        if (!this.registerEvent){
+            return;
+        }
+        console.log('initContextMenu:remove contextMenuListener')
+        this.contextMenuListener =(menu, file) => {
+            if (file instanceof TFile) {
+                // 在日记文件上右键创建相关项目
+                if (file.path.startsWith(this.settings.dailyFolder)) {
+                    menu.addItem((item) => {
+                        item.setTitle('创建关联项目')
+                            .setIcon(AddProjectIcon)
+                            .onClick(async () => {
+                                const projectName = await this.promptUser('请输入项目名称');
+                                if (projectName) {
+                                    this.createProjectNote(projectName, file);
+                                }
+                            });
+                    });
 
+                    menu.addItem((item) => {
+                        item.setTitle('创建关联会议记录')
+                            .setIcon(AddMettingIcon)
+                            .onClick(async () => {
+                                const meetingName = await this.promptUser('请输入会议名称');
+                                if (meetingName) {
+                                    this.createMeetingNote(meetingName, file);
+                                }
+                            });
+                    });
+                }
+
+                // 在项目文件上右键创建相关会议
+                if (file.path.startsWith(this.settings.projectFolder)) {
+                    menu.addItem((item) => {
+                        item.setTitle('创建关联会议记录')
+                            .setIcon(AddMettingIcon)
+                            .onClick(async () => {
+                                const meetingName = await this.promptUser('请输入会议名称');
+                                if (meetingName) {
+                                    this.createMeetingNote(meetingName, file);
+                                }
+                            });
+                    });
+                }
+            }
+        }
+        // 先移除可能存在的旧监听器（处理热重载场景）
+        if (this.contextMenuListener) {
+            console.log('initContextMenu:remove contextMenuListener')
+            this.app.workspace.off('file-menu', this.contextMenuListener);
+        }
+        // 注册新的事件监听器
+        this.app.workspace.on('file-menu', this.contextMenuListener);
+    }
+    // 初始化设置面板
+    initSettingsTab(){
+        this.addSettingTab(new WorkflowSettingTab(this.app, this,
+            (settings) => this.settingsManager.saveSettings(settings),
+            () => this.settingsManager.resetToDefaults()
+        ));
+    }
     // 检查并创建当日日记
     async checkAndCreateDailyNote() {
         const today = this.dateUtils.getFormattedDate(new Date());
@@ -348,7 +355,7 @@ export default class WorkflowPlugin extends Plugin {
     }
 
     // 创建会议记录
-    async createMeetingNote(meetingName?: string, relatedFile?: TFile) {
+    async createMeetingNote(meetingName?: string|null, relatedFile?: TFile) {
         if (!meetingName) {
             meetingName = await this.promptUser('请输入会议名称');
             if (!meetingName) return;
@@ -376,11 +383,13 @@ export default class WorkflowPlugin extends Plugin {
                          .replace(/{{meeting_name}}/g, `${meetingName}`);
         
         // 如果有相关文件，添加引用
+        console.log('relatedFile',relatedFile);
         if (relatedFile) {
-            if (relatedFile.path.startsWith(this.settings.projectFolder)) {
-                const projectFileName = relatedFile.name;
-                content = content.replace('相关项目', projectFileName);
-            }
+            //取出双引号
+            const relatedLink = this.fileManager.generateObsLink(relatedFile);
+            content = content.replace(/{{relatedFile}}/g, relatedLink);
+        }else{
+            content = content.replace(/{{relatedFile}}/g, ``);
         }
         
         // 创建文件
@@ -416,7 +425,6 @@ export default class WorkflowPlugin extends Plugin {
 
     // 提示用户输入
     async promptUser(message: string, defaultValue = ''): Promise<string | null > {
-        console.log('promptUser:');
         return new Promise(resolve => {
             const promptModal = new PromptModal(this.app, message, defaultValue, resolve);
             promptModal.open();
@@ -428,23 +436,4 @@ export default class WorkflowPlugin extends Plugin {
         const formattedDate = this.dateUtils.getFormattedDate(date);
         return `${this.settings.dailyFolder}/${formattedDate}.md`;
     }
-
-    // 禁用官方日记插件的方法
-    // async disableDailyNotesPlugin() {
-    //     const dailyNotesPluginId = 'daily-notes';
-        
-    //     // 通过类型断言访问非公开属性
-    //     const plugins = (this.app as any).plugins;
-        
-    //     // 检查官方日记插件是否已启用
-    //     if (plugins.enabledPlugins.has(dailyNotesPluginId)) {
-    //         try {
-    //             // 禁用官方日记插件
-    //             const result =await plugins.disablePlugin(dailyNotesPluginId);
-    //             console.log('已禁用官方日记插件',result);
-    //         } catch (error) {
-    //             console.error('禁用官方日记插件时出错:', error);
-    //         }
-    //     }
-    // }
 }

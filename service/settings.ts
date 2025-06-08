@@ -1,5 +1,4 @@
 import { Plugin } from 'obsidian';
-
 export interface WorkflowPluginSettings {
     dailyFolder: string;
     weeklyFolder: string;
@@ -56,7 +55,7 @@ week: #W{{week}}
 
 ---
 # 主要任务
-- [ ] `,
+`,
     projectTemplate: `---
 tags:
   - project
@@ -66,25 +65,24 @@ status: active
 
 # {{project_name}}
 
-## 项目目标
-- 
+## 项目资料
+
 
 ## 主要任务
-- [ ] 
+
 
 ## 相关文件
-- ![[workFlow/daily/相关日记文件]]
+
 
 ## 会议记录
-- ![[workFlow/meetings/相关会议记录]]`,
+
+`,
     meetingTemplate: `---
 tags:
   - meeting
 date: "{{date}}"
 time: "{{time}}"
-attendees: 
-  - 
-project: ![[workFlow/projects/相关项目]]
+links: {{relatedFile}}
 ---
 
 # {{meeting_name}}
@@ -111,7 +109,10 @@ export class SettingsManager {
         await this.plugin.saveData(settings);
     }
     async resetToDefaults(): Promise<void> {
-      const defaultSettings = { ...DEFAULT_SETTINGS };
-      await this.plugin.saveData(defaultSettings);
+      console.log('settings.resetToDefaults')
+      this.plugin.settings = {...DEFAULT_SETTINGS};
+      await this.plugin.saveData(this.plugin.settings);
+      console.log('settings.resetToDefaults done')
+      console.log('plugin.settings', this.plugin.settings)
     }
 }

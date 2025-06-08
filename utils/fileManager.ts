@@ -75,4 +75,9 @@ export class FileManager {
             return { work: [], personal: [] };
         }
     }
+
+    // 生成Obsidian文件链接
+    generateObsLink = (file: TFile) => {
+        return `"[[`+this.app.metadataCache.fileToLinktext(file,"")+`]]"`;
+    };
 }

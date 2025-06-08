@@ -147,3 +147,34 @@ export class PromptModal extends Modal {
     this.close();
   }
 }
+
+
+export class ConfirmModal extends Modal {
+  constructor(app: App, private onConfirm: () => void) {
+      super(app);
+  }
+
+  onOpen() {
+      const {contentEl} = this;
+      contentEl.setText('确定要恢复所有设置为默认值吗？');
+      
+      // 创建按钮容器
+      const buttonContainer = contentEl.createDiv({cls: 'modal-button-container'});
+      
+      // 创建取消按钮
+      buttonContainer.createEl('button', {text: '取消'}).onclick = () => {
+          this.close();
+      };
+      
+      // 创建确认按钮
+      buttonContainer.createEl('button', {text: '确认', cls: 'mod-cta'}).onclick = () => {
+          this.onConfirm();
+          this.close();
+      };
+  }
+
+  onClose() {
+      const {contentEl} = this;
+      contentEl.empty();
+  }
+}
