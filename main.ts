@@ -1,4 +1,4 @@
-import { Plugin, TFile,Menu,MarkdownView } from 'obsidian';
+import { Plugin, TFile,Menu,MarkdownView,Editor } from 'obsidian';
 import { WorkflowPluginSettings, SettingsManager } from './service/settings';
 import { FileManager } from './utils/fileManager';
 import { DateUtils } from './utils/dateUtils';
@@ -7,13 +7,15 @@ import { WorkflowSettingTab } from './service/settingTab';
 const AddProjectIcon ="target";
 const AddMettingIcon ="microphone";
 const AddDailyIcon ="calendar";
+const AddLinkIcon ="file-symlink";
 export default class WorkflowPlugin extends Plugin {
     settings: WorkflowPluginSettings;
     ribbonIconEl: HTMLElement;
     private settingsManager: SettingsManager;
     private fileManager: FileManager;
     private dateUtils: DateUtils;
-    private contextMenuListener: (menu: Menu, file: TFile) => void; // 保存事件监听器引用
+    private contextMenuListener: (menu: Menu, file: TFile) => void; // 保存文件选择事件监听器引用
+    private editorMenuListener:(menu: Menu, editor: Editor, view: MarkdownView) => void;// 保存文件编辑事件监听器引用
     async onload() {
         console.log('loading workflow plugin');
         // 初始化管理类
@@ -114,7 +116,6 @@ export default class WorkflowPlugin extends Plugin {
         if (!this.registerEvent){
             return;
         }
-        console.log('initContextMenu:remove contextMenuListener')
         this.contextMenuListener =(menu, file) => {
             if (file instanceof TFile) {
                 // 在日记文件上右键创建相关项目
@@ -145,6 +146,13 @@ export default class WorkflowPlugin extends Plugin {
                 // 在项目文件上右键创建相关会议
                 if (file.path.startsWith(this.settings.projectFolder)) {
                     menu.addItem((item) => {
+                        item.setTitle('添加到每周任务')
+                            .setIcon(AddLinkIcon)
+                            .onClick(async () => {
+                                await this.addToWeeklyTask(file, '');
+                            });
+                    });
+                    menu.addItem((item) => {
                         item.setTitle('创建关联会议记录')
                             .setIcon(AddMettingIcon)
                             .onClick(async () => {
@@ -157,13 +165,36 @@ export default class WorkflowPlugin extends Plugin {
                 }
             }
         }
+        this.editorMenuListener=(menu: Menu, editor: Editor, view: MarkdownView) => {
+            const file = view.file;
+            // console.log('filee',file);
+            // console.log('file.path.startsWith(this.settings.projectFolder)',file?.path.startsWith(this.settings.projectFolder));
+            // console.log('view instanceof MarkdownView',view instanceof MarkdownView);
+            if (
+              file && 
+              file.path.startsWith(this.settings.projectFolder) &&
+              view instanceof MarkdownView
+            ) {
+                const cursor = view.editor.getCursor();
+                const lineContent = view.editor.getLine(cursor.line);
+                console.log('lineContent',lineContent);
+                if (lineContent.trim().startsWith("#")) {
+                    console.log('22222222222');
+                    menu.addItem((item) => {
+                        item.setTitle('添加到每周任务')
+                        .setIcon(AddLinkIcon)
+                        .onClick(() => this.addToWeeklyTask(file, lineContent));
+                    });
+                }
+            }
+          }
         // 先移除可能存在的旧监听器（处理热重载场景）
-        if (this.contextMenuListener) {
-            console.log('initContextMenu:remove contextMenuListener')
-            this.app.workspace.off('file-menu', this.contextMenuListener);
-        }
+        this.app.workspace.off('file-menu', this.contextMenuListener);
+        this.app.workspace.off('editor-menu', this.editorMenuListener);
         // 注册新的事件监听器
         this.app.workspace.on('file-menu', this.contextMenuListener);
+        this.app.workspace.on('editor-menu', this.editorMenuListener)
+
     }
     // 初始化设置面板
     initSettingsTab(){
@@ -426,6 +457,36 @@ export default class WorkflowPlugin extends Plugin {
         if (!file) {
             await this.createWeeklyNote(date);
         }
+    }
+    async addToWeeklyTask(file: TFile, title: string) {
+        // 获取当前周的周记路径
+        const date = new Date();
+        const year = date.getFullYear();
+        const weekNumber = this.dateUtils.getWeekNumber(date);
+        const weeklyNotePath = `${this.settings.weeklyFolder}/${year}-w${weekNumber}.md`;
+        
+        // 确保周记存在
+        await this.ensureWeeklyNoteExists(date);
+        
+        // 获取周记文件
+        const weeklyNote = this.app.vault.getAbstractFileByPath(weeklyNotePath) as TFile;
+        if (!weeklyNote) return;
+        
+        // 生成任务内容（包含文件链接和标题）
+        // const fileLink = this.fileManager.generateObsLink(file); // 生成 [[文件路径]] 格式
+        console.log("this.app.metadataCache.fileToLinktext",this.app.metadataCache.fileToLinktext(file,""))
+        const fileLinkName = this.app.metadataCache.fileToLinktext(file,"")
+        const fileLink=`[[`+fileLinkName+title+`]]`
+        console.log('fileLinkName',fileLinkName);
+        console.log('fileLink',fileLink);
+        console.log('title',title);
+        const taskContent = `- ${fileLink}`;
+        
+        // 读取并修改周记内容（追加到“主要任务”部分）
+        const content = await this.app.vault.read(weeklyNote);
+        const updatedContent = `${content}\n${taskContent}`;
+        // 保存修改
+        await this.app.vault.modify(weeklyNote, updatedContent);
     }
 
     // 提示用户输入

@@ -34,7 +34,7 @@ weekDay: "{{weekday}}"
 
 ---
 
-# 每周工作
+# 每周任务
 ![[workFlow/weekly/{{date_year}}-w{{week}}#主要任务]]
 
 # 当日工作代办 

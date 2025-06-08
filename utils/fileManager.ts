@@ -1,4 +1,4 @@
-import { App, TFile, TFolder } from 'obsidian';
+import { App, TFile, TFolder ,MarkdownView} from 'obsidian';
 import { WorkflowPluginSettings } from '../service/settings';
 
 export class FileManager {
@@ -80,4 +80,14 @@ export class FileManager {
     generateObsLink = (file: TFile) => {
         return `"[[`+this.app.metadataCache.fileToLinktext(file,"")+`]]"`;
     };
+
+
+    //获取选中的文件内容
+    getActiveFileSelection(): string | null {
+        const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+        if (activeView) {
+          return activeView.editor.getSelection();
+        }
+        return null;
+    }
 }
