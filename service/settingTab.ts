@@ -102,13 +102,7 @@ export class WorkflowSettingTab extends PluginSettingTab {
             .setButtonText('恢复默认')
             .setWarning() // 设置为警告样式（红色按钮）
             .onClick(async () => {
-                // if (confirm('确定要恢复所有设置为默认值吗？')) {
-                //     await this.resetDefaultSettings();
-                //     // 重新加载设置面板以显示默认值
-                //     this.display();
-                // }
                 new ConfirmModal(this.app, async () => {
-                    console.log('恢复默认设置');
                     await this.resetDefaultSettings();
                     this.settings = this.plugin.settings;
                     // 重新加载设置面板以显示默认值

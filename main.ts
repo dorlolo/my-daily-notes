@@ -272,15 +272,15 @@ export default class WorkflowPlugin extends Plugin {
         }
 
         // 如果文件不存在，创建它
-        let file = this.app.vault.getAbstractFileByPath(dailyNotePath) as TFile;
+        let file = this.app.vault.getAbstractFileByPath(dailyNotePath);
         if (!file) {
             file = await this.createDailyNote(this.dateUtils.getFormattedDate(today));
             // 检查并创建相关周记
             await this.ensureWeeklyNoteExists(today);
         }
-
-        // 打开文件
-        await this.fileManager.openFile(file);
+        if (file instanceof TFile) {
+            await this.fileManager.openFile(file);
+        }
     }
 
     findLeafByPath(path: string): any {
@@ -511,7 +511,7 @@ export default class WorkflowPlugin extends Plugin {
         await this.ensureWeeklyNoteExists(date);
         
         // 获取周记文件
-        const weeklyNote = this.app.vault.getAbstractFileByPath(weeklyNotePath) as TFile;
+        const weeklyNote = this.app.vault.getAbstractFileByPath(weeklyNotePath) ;
         if (!weeklyNote) return;
         
         // 生成任务内容（包含文件链接和标题）
@@ -525,10 +525,13 @@ export default class WorkflowPlugin extends Plugin {
         const taskContent = `- ${fileLink}`;
         
         // 读取并修改周记内容（追加到“主要任务”部分）
+        if (weeklyNote instanceof TFile){
+            
         const content = await this.app.vault.read(weeklyNote);
         const updatedContent = `${content}\n${taskContent}`;
         // 保存修改
         await this.app.vault.modify(weeklyNote, updatedContent);
+    }
     }
 
     // 提示用户输入

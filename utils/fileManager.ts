@@ -20,15 +20,16 @@ export class FileManager {
     // 解析文件中未完成的任务
     async getIncompleteTasks(filePath: string): Promise<string[]> {
         try {
-        const file = this.app.vault.getAbstractFileByPath(filePath) as TFile;
-        if (!file) return [];
-        
-        const content = await this.app.vault.read(file);
-        const incompleteTasks = content.split('\n')
-            .filter(line => line.trim().startsWith('- [ ]'))
-            .map(line => line.trim());
-        
-        return incompleteTasks;
+            const file = this.app.vault.getAbstractFileByPath(filePath);
+            if (!file ||!(file instanceof TFile)) {
+                return [];
+            }
+            const content = await this.app.vault.read(file);
+            const incompleteTasks = content.split('\n')
+                .filter(line => line.trim().startsWith('- [ ]'))
+                .map(line => line.trim());
+            
+            return incompleteTasks;
         } catch (error) {
         console.error('解析未完成任务时出错:', error);
         return [];
@@ -37,7 +38,10 @@ export class FileManager {
     // 解析文件中不同类型的未完成任务
     async getIncompleteTasksByType(filePath: string): Promise<{ work: string[]; personal: string[] }> {
         try {
-            const file = this.app.vault.getAbstractFileByPath(filePath) as TFile;
+            const file = this.app.vault.getAbstractFileByPath(filePath);
+            if (!file ||!(file instanceof TFile)) {
+                return { work: [], personal: [] };
+            }
             if (!file) return { work: [], personal: [] };
             
             const content = await this.app.vault.read(file);

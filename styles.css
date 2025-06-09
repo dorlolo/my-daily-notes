@@ -6,3 +6,71 @@ available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 
 */
+
+.sd-modal-content-container {
+    padding: 24px;
+}
+.sd-modal-footer-container {
+    padding: 10px 24px 0 0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    border-top: 1px solid var(--background-modifier-border);
+}
+
+.sd-modal-input {
+    width: 95%;
+    border: 3px solid var(--background-modifier-border)!important;
+    font-size: 18px!important;
+    color: var(--text-normal)!important;
+    height: 40px!important;
+}
+
+.sd-modal-input:focus {
+    border: 1px solid var(--background-modifier-border)!important;
+    border-color: var(--interactive-accent)!important;
+    box-shadow: 0 0 0 2px var(--interactive-accent)!important;
+}
+.sd-modal-cancel-btn{
+    padding: 0 20px;
+    height: 40px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    background-color: var(--background-secondary);
+    color: var(--text-normal);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+.sd-modal-cancel-btn:hover{
+    background-color: var(--background-secondary-alt);
+    border-color: var(--interactive-accent);
+    color: var(--interactive-accent);
+    transform: scale(1.05);
+}
+.sd-modal-cancel-btn:active{
+    background-color: var(--background-modifier-border);
+    border-color: var(--interactive-accent);
+    color: var(--interactive-accent);
+}
+.sd-modal-confirm-btn{
+    padding: 0 20px;
+    height: 40px;
+    border: 1px solid var(--interactive-accent);
+    border-radius: 4px;
+    background-color: var(--interactive-accent)!important;
+    color: var(--text-on-accent)!important;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+.sd-modal-confirm-btn:hover{
+    background-color: var(--interactive-accent);
+    transform: scale(1.05);
+}
