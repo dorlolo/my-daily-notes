@@ -1,11 +1,11 @@
 {
-	"id": "my-daily-notes",
-	"name": "my-daily-notes",
-	"version": "1.0.3",
+	"id": "smooth-daily",
+	"name": "SmoothDaily",
+	"version": "1.0.4",
 	"minAppVersion": "0.15.0",
-	"description": "一个用于生成日记、周记、项目和会议笔记的插件",
+	"description": "Smoothly manage a variety of tasks, ranging from daily trivial matters to complex projects.",
 	"author": "dorlolo <wavingbear@163.com>",
 	"authorUrl": "https://github.com/dorlolo",
-	"fundingUrl": "https://github.com/dorlolo/my-daily-notes",
+	"fundingUrl": "https://github.com/dorlolo/smooth-daily",
 	"isDesktopOnly": false
 }
