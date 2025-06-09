@@ -25,12 +25,10 @@ export const DEFAULT_SETTINGS: WorkflowPluginSettings = {
     dailyTemplate: `---
 tags:
   - daily
+  - {{date_year}}-W{{week}}
 date: "{{date}}"
 week: "W{{week}}"
 weekDay: "{{weekday}}"
----
-#{{date_year}}-W{{week}}
-
 ---
 
 # 每周任务
@@ -44,12 +42,10 @@ weekDay: "{{weekday}}"
     weeklyTemplate: `---
 tags:
   - weekly
+  - {{date_year}}-{{date_month}}
+  - W{{week}}
 ---
 
-month: #{{date_year}}-{{date_month}}
-week: #W{{week}}
-
----
 # 主要任务
 `,
     projectTemplate: `---
